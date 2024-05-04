@@ -5,6 +5,8 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     photo.dir: "%kernel.project_dir%/public/uploads/photos"
+    akismet.base_url: "https://rest.akismet.com"
+    akismetKey: "%env(AKISMET_KEY)%"
 services:
     # default configuration for services in *this* file
     _defaults:

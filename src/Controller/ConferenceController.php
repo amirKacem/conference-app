@@ -7,12 +7,14 @@ use App\Entity\Conference;
 use App\Form\CommentFormType;
 use App\Repository\CommentRepository;
 use App\Repository\ConferenceRepository;
+use App\Service\SpamChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Twig\Error\RuntimeError;
 
 class ConferenceController extends AbstractController
 {
@@ -32,7 +34,7 @@ class ConferenceController extends AbstractController
     }
 
     #[Route('/conference/{slug}', name:'conference')]
-    public function show(Conference $conference, Request $request)
+    public function show(Conference $conference, Request $request, SpamChecker $spamChecker)
     {
         $commentForm = $this->createForm(CommentFormType::class, new Comment());
         $commentForm->handleRequest($request);
@@ -52,6 +54,17 @@ class ConferenceController extends AbstractController
                 $comment->setPhotoFileName($filename);
             }
             $this->em->persist($comment);
+            $context = [
+                'user_ip' => $request->getClientIp(),
+                'user_agent' => $request->headers->get('user-agent'),
+                'referrer' => $request->headers->get('referrer'),
+                'permalink' => $request->getUri()
+            ];
+
+            if(2 === $spamChecker->getSpamScore($comment, $context)) {
+                throw new RuntimeError('spam');
+            }
+
             $this->em->flush();
 
             return $this->redirectToRoute('conference', ['slug' => $conference->getSlug()]);
