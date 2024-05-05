@@ -2,6 +2,8 @@
 
 namespace App\Tests\Web;
 
+use App\Repository\CommentRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Panther\PantherTestCase;
 
 class ConferenceControllerTest extends PantherTestCase
@@ -45,18 +47,25 @@ class ConferenceControllerTest extends PantherTestCase
     public function testCommentSubmission()
     {
         $client = static::createClient();
-        $crawler =  $client->request('GET', '/conference/london-2023');
+
+        $crawler =  $client->request('GET', 'https://127.0.0.1:8001/conference/london-2023');
 
         $client->submitForm('Submit', [
-
                 'comment_form[author]' => 'Fabien',
                 'comment_form[text]' => 'Some feedback from an automated functional test',
-                'comment_form[email]' => 'me@automat.ed'
-
+                'comment_form[email]' => $email = 'me@automat.ed'
         ]);
 
+        $container = self::getContainer();
+        $comment = $container->get(CommentRepository::class)->findOneByEmail($email);
+        $comment->setState('published');
+        $container->get(EntityManagerInterface::class)->flush();
+
         $this->assertResponseRedirects();
+
         $client->followRedirect();
+
+
         $this->assertSelectorExists('div:contains("There are 1 comments.")');
     }
 }

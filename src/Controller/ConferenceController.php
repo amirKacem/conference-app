@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Entity\Conference;
 use App\Form\CommentFormType;
+use App\Message\CommentMessage;
 use App\Repository\CommentRepository;
 use App\Repository\ConferenceRepository;
 use App\Service\SpamChecker;
@@ -13,15 +14,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Twig\Error\RuntimeError;
 
 class ConferenceController extends AbstractController
 {
     public function __construct(
         private ConferenceRepository $conferenceRepository,
         private CommentRepository $commentRepository,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private MessageBusInterface $bus
     ) {
 
     }
@@ -54,6 +56,8 @@ class ConferenceController extends AbstractController
                 $comment->setPhotoFileName($filename);
             }
             $this->em->persist($comment);
+
+            $this->em->flush();
             $context = [
                 'user_ip' => $request->getClientIp(),
                 'user_agent' => $request->headers->get('user-agent'),
@@ -61,11 +65,10 @@ class ConferenceController extends AbstractController
                 'permalink' => $request->getUri()
             ];
 
-            if(2 === $spamChecker->getSpamScore($comment, $context)) {
-                throw new RuntimeError('spam');
-            }
 
-            $this->em->flush();
+            $this->bus->dispatch(
+                new CommentMessage($comment->getId(), $context)
+            );
 
             return $this->redirectToRoute('conference', ['slug' => $conference->getSlug()]);
         }
