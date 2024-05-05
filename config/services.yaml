@@ -7,6 +7,12 @@ parameters:
     photo.dir: "%kernel.project_dir%/public/uploads/photos"
     akismet.base_url: "https://rest.akismet.com"
     akismetKey: "%env(AKISMET_KEY)%"
+    default_domain: '127.0.0.1'
+    default_scheme: 'http'
+    router.request_context.host: '%env(default:default_domain:SYMFONY_DEFAULT_ROUTE_HOST)%'
+    router.request_context.scheme: '%env(default:default_scheme:SYMFONY_DEFAULT_ROUTE_SCHEME)%'
+    default_admin_email: 'admin@exemple.com'
+    admin_email: "%env(string:default:default_admin_email:ADMIN_EMAIL)%"
 services:
     # default configuration for services in *this* file
     _defaults:
