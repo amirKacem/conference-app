@@ -18,9 +18,7 @@ framework:
         log: true
 
 
-when@dev:
-    framework:
-        http_cache: true
+
 
 when@test:
     framework:
