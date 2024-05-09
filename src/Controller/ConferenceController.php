@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Twig\Environment;
 
 class ConferenceController extends AbstractController
 {
@@ -23,7 +24,8 @@ class ConferenceController extends AbstractController
         private ConferenceRepository $conferenceRepository,
         private CommentRepository $commentRepository,
         private EntityManagerInterface $em,
-        private MessageBusInterface $bus
+        private MessageBusInterface $bus,
+        private Environment $twig
     ) {
 
     }
@@ -32,7 +34,11 @@ class ConferenceController extends AbstractController
     #[Route('/', name: 'homepage')]
     public function index(): Response
     {
-        return $this->render('conference/index.html.twig');
+
+        $response = new Response($this->twig->render('conference/index.html.twig'));
+
+        $response->setSharedMaxAge(3600);
+        return $response;
     }
 
     #[Route('/conference/{slug}', name:'conference')]
@@ -82,5 +88,16 @@ class ConferenceController extends AbstractController
             'next' => min(count($comments), $offset + $this->commentRepository::PAGINATOR_PER_PAGE),
             'comment_form' => $commentForm->createView(),
         ]);
+    }
+
+    #[Route('/conference_header', name: 'conference_header')]
+    public function conferenceHeader()
+    {
+        $response = new Response($this->twig->render('conference/header.html.twig', [
+            'conferences' => $this->conferenceRepository->findAll(),
+        ]));
+        $response->setSharedMaxAge(3600);
+
+        return $response;
     }
 }
