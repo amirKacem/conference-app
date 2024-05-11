@@ -3,16 +3,18 @@
 namespace App\MessageHandler;
 
 use App\Message\CommentMessage;
+use App\Notification\CommentReviewNotification;
 use App\Repository\CommentRepository;
 use App\Service\ImageOptimizer;
 use App\Service\SpamChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Bridge\Twig\Mime\NotificationEmail;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
+use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 final class CommentMessageHandler implements MessageHandlerInterface
@@ -25,8 +27,8 @@ final class CommentMessageHandler implements MessageHandlerInterface
         private LoggerInterface $logger,
         private MessageBusInterface $bus,
         private ParameterBagInterface $parameterBag,
-        private MailerInterface $mailer,
-        private ImageOPtimizer $imageOPtimizer
+        private ImageOPtimizer $imageOPtimizer,
+        private NotifierInterface $notifier
     ) {
 
     }
@@ -54,17 +56,10 @@ final class CommentMessageHandler implements MessageHandlerInterface
             $this->bus->dispatch($message);
 
         } elseif ($this->commentStateMachine->can($comment, 'publish') || $this->commentStateMachine->can($comment, 'publish_ham')) {
-
-            $adminEmail = $this->parameterBag->get('admin_email');
-            $this->mailer
-                ->send(
-                    (new NotificationEmail())
-                    ->subject('new Comment Posted')
-                    ->htmlTemplate('emails/comment_notification.html.twig')
-                    ->from($adminEmail)
-                    ->to($adminEmail)
-                    ->context(['comment' => $comment])
-                );
+            $this->notifier->send(
+                new CommentReviewNotification($comment, $message->getReviewUrl()),
+                ...$this->notifier->getAdminRecipients()
+            );
 
 
         } elseif($this->commentStateMachine->can($comment, 'optimize')) {
@@ -75,6 +70,16 @@ final class CommentMessageHandler implements MessageHandlerInterface
 
             $this->commentStateMachine->apply($comment, 'optimize');
             $this->em->flush();
+            $notification = (new Notification('Comment approved', ['email']))
+                            ->content('Your comment approved');
+            if(empty($comment->getEmail()) === false) {
+                $this->notifier->send(
+                    $notification,
+                    new Recipient(
+                        $comment->getEmail()
+                    )
+                );
+            }
         } elseif (false === empty($this->logger)) {
             $this->logger->debug('Dropping comment message', ['comment' => $comment->getId(), 'state' => $comment->getState()]);
         }
