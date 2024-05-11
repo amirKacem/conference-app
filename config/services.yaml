@@ -13,6 +13,7 @@ parameters:
     router.request_context.scheme: '%env(default:default_scheme:SYMFONY_DEFAULT_ROUTE_SCHEME)%'
     default_admin_email: 'admin@exemple.com'
     admin_email: "%env(string:default:default_admin_email:ADMIN_EMAIL)%"
+    photo_dir: "%kernel.project_dir%/public/uploads/photos"
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -37,3 +38,4 @@ services:
             - { name: 'doctrine.orm.entity_listener', event: 'preUpdate', entity: 'App\Entity\Conference'}
     
     Symfony\Component\HttpKernel\HttpCache\StoreInterface: '@http_cache.store'
+    Imagine\Gd\Imagine:
