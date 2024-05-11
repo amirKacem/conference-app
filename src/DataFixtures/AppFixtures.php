@@ -41,6 +41,7 @@ class AppFixtures extends Fixture
         $comment1->setEmail('fabien@example.com');
         $comment1->setState('published');
         $comment1->setText('This was a great conference.');
+        $manager->persist($comment1);
 
         $comment2 = new Comment();
         $comment2->setConference($amsterdam);
@@ -49,7 +50,14 @@ class AppFixtures extends Fixture
         $comment2->setText('I think this one is going to be moderated.');
         $manager->persist($comment2);
 
-        $manager->persist($comment1);
+
+        $comment3 = new Comment();
+        $comment3->setConference($amsterdam);
+        $comment3->setAuthor('Amir');
+        $comment3->setEmail('amir@example.com');
+        $comment3->setState('spam');
+        $comment3->setText('This was a great conference.');
+        $manager->persist($comment3);
 
         $admin = new Admin();
         $admin->setRoles(['ROLE_ADMIN']);
