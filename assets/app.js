@@ -5,9 +5,8 @@
  * (and its CSS file) in your base layout (base.html.twig).
  */
 
-import './styles/app.scss';
-import 'bootstrap';
-import bsCustomFileInput from 'bs-custom-file-input';
+// any CSS you import will output into a single css file (app.css in this case)
+import './styles/app.css';
 
-
-bsCustomFileInput.init();
+// start the Stimulus application
+import './bootstrap';
