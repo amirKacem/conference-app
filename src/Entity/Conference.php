@@ -8,20 +8,37 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ConferenceRepository::class)]
 #[UniqueEntity('slug')]
+#[ApiResource(
+    operations: [new Get(normalizationContext: ['groups' => self::CONFERENCE_ITEM]),
+    new GetCollection(normalizationContext: ['groups' => self::CONFERENCE_LIST])],
+    order: ['year' => 'DESC', 'city' => 'ASC'],
+    paginationEnabled: false
+)]
 class Conference
 {
+    public const CONFERENCE_LIST = "conference:list";
+
+    public const CONFERENCE_ITEM = "conference:item";
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups([self::CONFERENCE_LIST, self::CONFERENCE_ITEM])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups([self::CONFERENCE_LIST, self::CONFERENCE_ITEM])]
     private ?string $city = null;
 
     #[ORM\Column(length: 4)]
+    #[Groups([self::CONFERENCE_LIST, self::CONFERENCE_ITEM])]
     private ?string $year = null;
 
     #[ORM\Column]
@@ -31,6 +48,7 @@ class Conference
     private Collection $comments;
 
     #[ORM\Column(length: 255, unique:true)]
+    #[Groups([self::CONFERENCE_LIST, self::CONFERENCE_ITEM])]
     private ?string $slug = null;
 
     public function __construct()
