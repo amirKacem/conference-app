@@ -71,6 +71,7 @@ class Comment
     private ?string $photoFilename = null;
 
     #[ORM\Column(nullable: true, options:["default" => "submitted"])]
+    #[Groups([self::COMMENT_LIST, self::COMMENT_ITEM])]
     private ?string $state = "submitted";
 
     public function getId(): ?int
