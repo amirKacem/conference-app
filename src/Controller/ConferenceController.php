@@ -34,7 +34,13 @@ class ConferenceController extends AbstractController
     }
 
 
-    #[Route('/', name: 'homepage')]
+    #[Route('/')]
+    public function indexNoLocale(): Response
+    {
+        return $this->redirectToRoute('homepage', ['_locale' => 'en']);
+    }
+
+    #[Route('/{_locale<%app.supported_locales%>}/', name: 'homepage')]
     public function index(): Response
     {
 
@@ -46,7 +52,7 @@ class ConferenceController extends AbstractController
         return $response;
     }
 
-    #[Route('/conference/{slug}', name:'conference')]
+    #[Route('/{_locale<%app.supported_locales%>}/conference/{slug}', name:'conference')]
     public function show(Conference $conference, Request $request, NotifierInterface $notifier)
     {
         $commentForm = $this->createForm(CommentFormType::class, new Comment());
@@ -103,7 +109,7 @@ class ConferenceController extends AbstractController
         ]);
     }
 
-    #[Route('/conference_header', name: 'conference_header')]
+    #[Route('/{_locale<%app.supported_locales%>}/conference_header', name: 'conference_header')]
     public function conferenceHeader()
     {
         $response = new Response($this->twig->render('conference/header.html.twig', [

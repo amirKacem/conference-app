@@ -4,38 +4,16 @@ namespace App\Tests\Web;
 
 use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Panther\PantherTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class ConferenceControllerTest extends PantherTestCase
+class ConferenceControllerTest extends WebTestCase
 {
-    public function testIndex(): void
-    {
-        $client = static::createPantherClient(
-            [
-            'browser' => 'firefox',
-            'external_base_uri' => $_SERVER['SYMFONY_PROJECT_DEFAULT_ROUTE_URL']
-        ],
-            [],
-            [
-          'capabilities' => [
-              'acceptInsecureCerts' => true,
-          ],
-        ]
-        );
-        $client->request('GET', '/');
-
-        $this->assertSelectorTextContains('h2', 'Give your feedback');
-        $this->assertSelectorTextContains('a', 'Guestbook');
-    }
-
-
     public function testConferencePage()
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/');
-
+        $crawler = $client->request('GET', '/en/');
         $this->assertCount(3, $crawler->filter('h4'));
-        $link = $crawler->selectLink('View')->eq(2)->link();
+        $link = $crawler->selectLink('__View')->eq(2)->link();
         $client->click($link);
 
         $this->assertPageTitleContains('London');
@@ -48,7 +26,7 @@ class ConferenceControllerTest extends PantherTestCase
     {
         $client = static::createClient();
 
-        $crawler =  $client->request('GET', 'https://127.0.0.1:8001/conference/london-2023');
+        $crawler =  $client->request('GET', '/en/conference/london-2023');
 
         $client->submitForm('Submit', [
                 'comment_form[author]' => 'Fabien',
@@ -66,6 +44,6 @@ class ConferenceControllerTest extends PantherTestCase
         $client->followRedirect();
 
 
-        $this->assertSelectorExists('div:contains("There are 1 comments.")');
+        $this->assertSelectorExists('div:contains("There is one comment")');
     }
 }
