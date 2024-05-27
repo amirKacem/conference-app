@@ -14,6 +14,7 @@ parameters:
     default_admin_email: 'admin@exemple.com'
     admin_email: "%env(string:default:default_admin_email:ADMIN_EMAIL)%"
     photo_dir: "%kernel.project_dir%/public/uploads/photos"
+    app.supported_locales: 'en|fr'
 services:
     # default configuration for services in *this* file
     _defaults:
