@@ -7,15 +7,15 @@
     <body>
       <trans-unit id="eOy4.6V" resname="Conference Guestbook">
         <source>Conference Guestbook</source>
-        <target>__Conference Guestbook</target>
+        <target>Conference Guestbook</target>
       </trans-unit>
       <trans-unit id="LNAVleg" resname="Give your feedback!">
         <source>Give your feedback!</source>
-        <target>__Give your feedback!</target>
+        <target>Give your feedback!</target>
       </trans-unit>
       <trans-unit id="3Mg5pAF" resname="View">
         <source>View</source>
-        <target>__View</target>
+        <target>View</target>
       </trans-unit>
       <trans-unit id="maMQz7W" resname="nb_of_comments">
         <source>nb_of_comments</source>
