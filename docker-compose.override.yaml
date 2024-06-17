@@ -9,6 +9,7 @@ services:
 
 ###> symfony/mailer ###
   mailer:
+    container_name: conference_mailer
     image: axllent/mailpit
     ports:
       - "1025"
